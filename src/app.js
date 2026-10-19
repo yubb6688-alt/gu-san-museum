@@ -198,7 +198,7 @@ function appendCultureText(container, entry, text) {
   if (source.url) {
     const link = document.createElement('a');
     link.href = source.url;
-    link.target = '_blank';
+    link.target = source.target === '_self' ? '_self' : '_blank';
     link.rel = 'noopener noreferrer';
     link.textContent = source.publisher || source.title;
     details.append(link);
