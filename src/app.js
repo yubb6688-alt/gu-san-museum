@@ -53,7 +53,8 @@ function renderPatternList() {
     }
     button.dataset.texture = option.value;
     button.addEventListener('click', () => {
-      if (pattern.value === option.value && !plainCanopy.checked) return;
+      if (pattern.value === option.value && !plainCanopy.checked
+        && umbrella?.userData.canopyTexture?.userData.state !== 'error') return;
       changePattern(option.value);
     });
     item.append(button);
@@ -92,21 +93,16 @@ async function renderUmbrellaPreviews() {
       });
       const geometries = new Set();
       const materials = new Set();
-      const textures = new Set();
       object.traverse((part) => {
         if (part.geometry) geometries.add(part.geometry);
         if (part.material) {
           materials.add(part.material);
-          if (part.material.map) textures.add(part.material.map);
         }
       });
       try {
-        // 生成器会异步读图；等纹样、竹木贴图都就绪后再截取预览。
-        const deadline = performance.now() + 15000;
-        while ([...textures].some((texture) => !texture.image?.width)) {
-          if (performance.now() > deadline) throw new Error('伞预览贴图加载超时');
-          await new Promise((resolve) => setTimeout(resolve, 50));
-        }
+        // 慢网络下继续等待；单张加载失败不终止后续预览。
+        await object.userData.texturesReady;
+        if (object.userData.canopyTexture?.userData.state === 'error') continue;
         const bounds = new THREE.Box3().setFromObject(object);
         const center = bounds.getCenter(new THREE.Vector3());
         camera.position.copy(center).add(new THREE.Vector3(2.6, 2.2, 4));
@@ -267,6 +263,12 @@ function rebuildUmbrella() {
   next.rotation.y = umbrella?.rotation.y ?? 0;
   scene.setUmbrella(next);
   umbrella = next;
+  const texture = next.userData.canopyTexture;
+  status.textContent = texture?.userData.state === 'loading' ? '纹样图片加载中，请稍候…' : '';
+  texture?.userData.ready.then((loaded) => {
+    if (umbrella !== next) return;
+    status.textContent = loaded ? '' : '纹样图片加载失败，请刷新页面，或切换纹样后重试。';
+  });
 }
 
 function selectUmbrella(umbrella, selectedButton) {
@@ -329,7 +331,6 @@ async function loadCatalog() {
   rebuildUmbrella();
   controls.disabled = false;
   updatePatternSelection();
-  status.textContent = '';
   renderUmbrellaPreviews().catch(console.error);
 
   let previousTime;

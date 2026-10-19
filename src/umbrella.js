@@ -1,41 +1,84 @@
 import * as THREE from 'three';
 
-// 两张贴图由所有伞共用，调参重建时不重复加载。
-const textureLoader = new THREE.TextureLoader();
-const bambooTexture = textureLoader.load(new URL('../assets/textures/bamboo-rib.png', import.meta.url).href);
-const woodTexture = textureLoader.load(new URL('../assets/textures/wood-handle.png', import.meta.url).href);
-for (const texture of [bambooTexture, woodTexture]) {
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.anisotropy = 4;
-}
-// 保持纵向纤维沿圆柱长度方向，避免把整张竹纹挤进细杆周长。
-bambooTexture.repeat.set(0.08, 1);
-woodTexture.repeat.set(0.5, 1);
-
-const canopyTextures = new Map();
-function loadCanopyTexture(path) {
-  if (path === null) return null;
-  if (canopyTextures.has(path)) return canopyTextures.get(path);
-  const texture = textureLoader.load(path, (loaded) => {
-    // 透明纹样印在完整纸面上，透明处保留材质底色，不挖空纸面。
-    const canvas = document.createElement('canvas');
-    canvas.width = loaded.image.width;
-    canvas.height = loaded.image.height;
-    const context = canvas.getContext('2d');
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(loaded.image, 0, 0);
-    loaded.image = canvas;
-    loaded.needsUpdate = true;
+// 所有伞共用图片；下载成功前保留纯色材质，不使用未就绪的贴图。
+const imageLoader = new THREE.ImageLoader();
+const textureCache = new Map();
+function loadTexture(path, paper = false) {
+  let texture = textureCache.get(path);
+  if (texture && texture.userData.state !== 'error') return texture;
+  if (!texture) {
+    texture = new THREE.Texture();
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = 4;
+    textureCache.set(path, texture);
+  }
+  texture.userData.state = 'loading';
+  texture.userData.ready = new Promise((resolve) => {
+    let attempts = 0;
+    function failed() {
+      if (attempts < 3) {
+        setTimeout(attempt, attempts * 1000);
+      } else {
+        texture.userData.state = 'error';
+        resolve(false);
+      }
+    }
+    function attempt() {
+      attempts += 1;
+      const url = new URL(path, document.baseURI);
+      if (attempts > 1) url.searchParams.set('retry', String(attempts));
+      imageLoader.load(url.href, (image) => {
+        try {
+          if (paper) {
+            // 透明纹样印在完整纸面上，透明处保留纸色。
+            const canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            const context = canvas.getContext('2d');
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0);
+            texture.image = canvas;
+          } else {
+            texture.image = image;
+          }
+          texture.needsUpdate = true;
+          texture.userData.state = 'ready';
+          resolve(true);
+        } catch (error) {
+          console.error('贴图处理失败', url.href, error);
+          failed();
+        }
+      }, undefined, failed);
+    }
+    attempt();
   });
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
-  texture.anisotropy = 4;
-  canopyTextures.set(path, texture);
   return texture;
 }
+
+function applyTexture(material, texture) {
+  if (!texture) return;
+  if (texture.userData.state === 'ready') {
+    material.map = texture;
+    return;
+  }
+  let disposed = false;
+  material.addEventListener('dispose', () => { disposed = true; });
+  texture.userData.ready.then((loaded) => {
+    if (!loaded || disposed) return;
+    material.map = texture;
+    material.needsUpdate = true;
+  });
+}
+
+const bambooTexture = loadTexture(new URL('../assets/textures/bamboo-rib.png', import.meta.url).href);
+const woodTexture = loadTexture(new URL('../assets/textures/wood-handle.png', import.meta.url).href);
+for (const texture of [bambooTexture, woodTexture]) {
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+}
+bambooTexture.repeat.set(0.08, 1);
+woodTexture.repeat.set(0.5, 1);
 
 // 由页面的 importmap 将 three 指向 Three.js 0.169.0。
 export function createUmbrella(params = {}) {
@@ -123,7 +166,6 @@ export function createUmbrella(params = {}) {
   });
   const ribMaterial = new THREE.MeshStandardMaterial({
     color: ribColor ?? colors.ribs ?? '#ffffff', roughness: 0.85,
-    map: bambooTexture,
   });
   const stretcherMaterial = new THREE.MeshStandardMaterial({
     color: colors.ribs ?? '#738052', roughness: 0.85,
@@ -133,11 +175,10 @@ export function createUmbrella(params = {}) {
   });
   const handleMaterial = new THREE.MeshStandardMaterial({
     color: colors.handle ?? '#ffffff', roughness: 0.75,
-    map: woodTexture,
   });
+  const fabricTexture = canopyTexture === null ? null : loadTexture(canopyTexture, true);
   const canopyMaterial = new THREE.MeshPhysicalMaterial({
     color: canopyColor ?? colors.canopy ?? '#cba348',
-    map: loadCanopyTexture(canopyTexture),
     transmission,
     roughness,
     metalness: 0,
@@ -146,6 +187,15 @@ export function createUmbrella(params = {}) {
     thickness: 0,
     side: THREE.DoubleSide,
   });
+
+  applyTexture(ribMaterial, bambooTexture);
+  applyTexture(handleMaterial, woodTexture);
+  applyTexture(canopyMaterial, fabricTexture);
+  umbrella.userData.canopyTexture = fabricTexture;
+  umbrella.userData.texturesReady = Promise.all(
+    [bambooTexture, woodTexture, fabricTexture].filter(Boolean)
+      .map((texture) => texture.userData.ready),
+  );
 
   const up = new THREE.Vector3(0, 1, 0);
   function positionRod(mesh, start, end) {
