@@ -1,0 +1,211 @@
+[
+  {
+    "id": "luzhou-fenshui",
+    "name": "泸州分水油纸伞",
+    "alias": "",
+    "origin": "",
+    "_source": {
+      "name": "用户在本次任务中指定的条目名称"
+    },
+    "geometry": {
+      "ribCount": 24,
+      "ribLength": 1.0213423764830283,
+      "radius": 1,
+      "canopyHeight": 0.35,
+      "canopyRise": 0.06,
+      "openAmount": 1,
+      "shaftLength": 1.6
+    },
+    "material": {
+      "canopyTexture": "assets/patterns/peony-crimson.png",
+      "canopyColor": "#cba348",
+      "transmission": 0.6,
+      "roughness": 0.65,
+      "ribColor": "#ffffff"
+    },
+    "patterns": [
+      {
+        "name": "牡丹",
+        "texture": "assets/patterns/peony-crimson.png",
+        "_source": "用户指定的纹样显示名称"
+      },
+      {
+        "name": "西湖",
+        "texture": "assets/patterns/westlake-ink.png",
+        "_source": "用户指定的纹样显示名称"
+      },
+      {
+        "name": "墨梅",
+        "texture": "assets/patterns/plum-ink.png",
+        "_source": "用户指定的纹样显示名称"
+      },
+      {
+        "name": "缠枝莲",
+        "texture": "assets/patterns/lotus-scroll.png",
+        "_source": "用户指定的纹样显示名称"
+      },
+      {
+        "name": "仙鹤流云",
+        "texture": "assets/patterns/crane-cloud.png",
+        "_source": "用户指定的纹样显示名称"
+      },
+      {
+        "name": "五蝠捧寿",
+        "texture": "assets/patterns/bat-fortune.png",
+        "_source": "用户指定的纹样显示名称"
+      },
+      {
+        "name": "雨竹",
+        "texture": "assets/patterns/rain-bamboo.png",
+        "_source": "用户指定的纹样显示名称"
+      },
+      {
+        "name": "云雷纹",
+        "texture": "assets/patterns/cloud-thunder.png",
+        "_source": "用户指定的纹样显示名称"
+      }
+    ],
+    "preview": {
+      "lightAngle": 45,
+      "lightIntensity": 6,
+      "showCanopy": true
+    },
+    "culture": {
+      "shape": {
+        "text": "以杭州工艺美术博物馆所藏的分水油纸伞为例，伞杆与伞斗为竹制，伞斗穿有多色花线装饰。",
+        "level": "史实",
+        "_source": {
+          "title": "现代泸州红色满穿油纸伞 图1",
+          "publisher": "杭州工艺美术博物馆（杭州中国刀剪剑、扇业、伞业博物馆）",
+          "url": "https://artsandculture.google.com/asset/modern-luzhou-red-oil-paper-umbrella-with-stretchers-covered-by-colorful-silk-threads/iAFtNuX9j_AloQ?hl=zh-cn"
+        }
+      },
+      "size": {
+        "text": "",
+        "level": null,
+        "_source": null
+      },
+      "materials": {
+        "text": "制作所用原料包括楠竹、水竹、岩桐木、皮纸和桐油。",
+        "level": "史实",
+        "_source": {
+          "title": "伞制作技艺（油纸伞制作技艺）",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+          "url": "https://www.ihchina.cn/project_details/14579"
+        }
+      },
+      "patternTheme": {
+        "text": "伞面装饰可将诗文与绘画结合。",
+        "level": "史实",
+        "_source": {
+          "title": "伞制作技艺（油纸伞制作技艺）",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+          "url": "https://www.ihchina.cn/project_details/14579"
+        }
+      },
+      "patternMeaning": {
+        "text": "",
+        "level": null,
+        "_source": null
+      }
+    },
+    "craftSteps": [
+      {
+        "name": "选材备料",
+        "desc": "一般认为，选材要先检查竹料是否顺直、有无裂口，再备好木料、纸张和桐油。竹料要承担反复撑收的弯曲，纸张要能完整裱糊；带裂纹的竹料在削薄、钻孔时可能继续开裂，影响骨架牢固。【待核实】",
+        "image": "assets/craft/craft-01.png",
+        "level": "推断",
+        "_source": {
+          "title": "伞制作技艺（油纸伞制作技艺）",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+          "url": "https://www.ihchina.cn/project_details/14579",
+          "scope": "直接支持分水油纸伞选料精细及竹、木、纸、桐油的原料组成；检查方法和裂纹扩展后果为材料性质推断，待工艺人员核实。"
+        }
+      },
+      {
+        "name": "劈削伞骨",
+        "desc": "一般认为，竹料顺纹劈开后，要刮削成厚薄相配的长骨和撑骨，并修顺边角。这是让各根骨条协调支撑伞面的基础；削得过薄容易折损，厚薄差异过大则可能使伞面高低不齐，开合时受力不均。【待核实】",
+        "image": "assets/craft/craft-02.png",
+        "level": "推断",
+        "_source": {
+          "title": "现代手绘梅兰竹菊油纸伞 图1",
+          "publisher": "杭州工艺美术博物馆（杭州中国刀剪剑、扇业、伞业博物馆）",
+          "url": "https://artsandculture.google.com/asset/modern-oil-paper-umbrella-with-painted-patterns-of-plum-blossoms-orchids-bamboo-and-chrysanthemums/JAFFasZ2iASMZg?hl=zh-cn",
+          "scope": "直接支持传统油纸伞的劈骨、削骨等动作；藏品属于余杭，仅作通用工序参照。厚薄与受力后果、在分水工艺中的具体做法待核实。"
+        }
+      },
+      {
+        "name": "钻孔修整",
+        "desc": "一般认为，在削好的骨条上标定连接位置，再钻孔、清理孔口，是为后续穿连和转动留出通道。孔位要彼此配合；钻偏会使骨条连接不齐，孔边留下裂口或毛刺，还可能削弱骨条或磨损连接线。【待核实】",
+        "image": "assets/craft/craft-03.png",
+        "level": "推断",
+        "_source": {
+          "title": "留下“雨巷”里最后的油纸伞",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆（转载《华西都市报》）",
+          "url": "https://www.ihchina.cn/project_details/11476.html",
+          "scope": "报道直接记载分水制伞中的钻孔工序；定位、清理孔口的解释及钻偏、毛刺的后果为结构推断，待工艺人员核实。"
+        }
+      },
+      {
+        "name": "组架穿线",
+        "desc": "一般认为，把长骨、撑骨与伞斗、伞杆装配起来，再穿连骨条、网住伞边，才能让分散的骨条共同张开。穿连要兼顾牢固和活动；过松可能使骨架偏斜，过紧则可能牵住转动部位，使撑收不顺。【待核实】",
+        "image": "assets/craft/craft-04.png",
+        "level": "推断",
+        "_source": {
+          "title": "伞制作技艺（油纸伞制作技艺）",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+          "url": "https://www.ihchina.cn/project_details/14579",
+          "scope": "直接支持分水制伞含穿绞、网边等工序；此处合并为组架阶段。具体装配关系、松紧与开合后果为结构推断，不指称当地花线技法的完整次序。"
+        }
+      },
+      {
+        "name": "裱糊伞面",
+        "desc": "一般认为，在展开的伞架上施胶，把裁好的纸片逐片贴合，并压平接缝，才能形成连续的遮蔽面。接缝需要贴牢，纸面松紧也要协调；若局部悬空或粘贴不实，干燥和开合后可能起皱、翘边或开裂。【待核实】",
+        "image": "assets/craft/craft-05.png",
+        "level": "推断",
+        "_source": {
+          "title": "伞制作技艺（油纸伞制作技艺）",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+          "url": "https://www.ihchina.cn/project_details/14579",
+          "scope": "直接支持皮纸原料与糊纸工序；逐片贴合参照传统手绘纸伞的一般做法，未指定当地胶料配方。粘贴缺陷与起皱、翘边、开裂的因果为推断，待核实。"
+        }
+      },
+      {
+        "name": "绘饰伞面",
+        "desc": "一般认为，先糊后绘的手绘款要待纸面稳定，再安排图案位置、勾线着色，让纹样沿伞面连续展开。这一步服务于装饰，素面伞可以省略；若跨折痕衔接不当，图案会错位，着色过湿还可能使纸面起皱。【待核实】",
+        "image": "assets/craft/craft-06.png",
+        "level": "推断",
+        "_source": {
+          "title": "现代手绘梅兰竹菊油纸伞 图1",
+          "publisher": "杭州工艺美术博物馆（杭州中国刀剪剑、扇业、伞业博物馆）",
+          "url": "https://artsandculture.google.com/asset/modern-oil-paper-umbrella-with-painted-patterns-of-plum-blossoms-orchids-bamboo-and-chrysanthemums/JAFFasZ2iASMZg?hl=zh-cn",
+          "scope": "馆藏余杭手绘伞直接记载先糊纸、后绘画、再涂油；仅作手绘路线参照，不证明分水所有款式都采用此顺序。绘饰失误后果及地方适用性待核实。"
+        }
+      },
+      {
+        "name": "涂刷桐油",
+        "desc": "一般认为，纸面和绘饰干燥后涂刷桐油，要照顾纸面、接缝与边缘，使覆盖尽量均匀。这层油帮助纸面抵御水分；若有漏刷，局部可能吸水变软，油层堆积过厚则可能延长干燥时间，增加粘连风险。【待核实】",
+        "image": "assets/craft/craft-07.png",
+        "level": "推断",
+        "_source": {
+          "title": "伞制作技艺（油纸伞制作技艺）",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+          "url": "https://www.ihchina.cn/project_details/14579",
+          "scope": "直接支持桐油原料及上油工序；涂油安排结合手绘路线归纳。防水机理、漏刷与油层过厚的后果为材料性质推断，未给配方、温度或遍数。"
+        }
+      },
+      {
+        "name": "干燥验伞",
+        "desc": "一般认为，上油后的伞要展开干燥，待油面不再粘手，再试着撑收并查看接缝、骨条和连接处，才能确认是否适合使用。未干就收拢可能使纸面粘连；发现卡顿或翘边时应先返修，不能用力硬撑。【待核实】",
+        "image": "assets/craft/craft-08.png",
+        "level": "推断",
+        "_source": {
+          "title": "现代手绘梅兰竹菊油纸伞 图1",
+          "publisher": "杭州工艺美术博物馆（杭州中国刀剪剑、扇业、伞业博物馆）",
+          "url": "https://artsandculture.google.com/asset/modern-oil-paper-umbrella-with-painted-patterns-of-plum-blossoms-orchids-bamboo-and-chrysanthemums/JAFFasZ2iASMZg?hl=zh-cn",
+          "scope": "馆藏余杭手绘伞直接记载涂油后干燥；未据此指定分水伞的干燥方式或时长。粘连风险与成伞检查建议为推断，不是已查证的当地验收标准。"
+        }
+      }
+    ]
+  }
+]
