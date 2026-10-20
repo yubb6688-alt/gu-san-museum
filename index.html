@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: #273a32;
+      background: #bdc7c0;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    .museum {
+      --ink: #273a32;
+      --bamboo: #52685a;
+      --cinnabar: #9c4035;
+      --cinnabar-deep: #7f3029;
+      --oil-gold: #b7975b;
+      --glass-background: rgba(241, 233, 214, 0.25);
+      --glass-border: rgba(255, 250, 235, 0.72);
+      --glass-blur: blur(16px) saturate(1.12);
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr) 310px;
+      min-height: 100vh;
+      min-height: 100svh;
+    }
+
+    /* 将同一张水乡图片铺到目录后面，供透明面板透出和虚化。 */
+    .museum::before {
+      content: "";
+      grid-column: 1;
+      grid-row: 1;
+      min-width: 0;
+      min-height: 0;
+      z-index: 0;
+      background: url('./assets/misc/hall-bg.png') left center / auto 100% no-repeat;
+      filter: sepia(0.3) saturate(0.85) brightness(0.95);
+      pointer-events: none;
+    }
+
+    .museum::after {
+      content: "";
+      grid-column: 1 / -1;
+      grid-row: 2;
+      min-width: 0;
+      min-height: 0;
+      z-index: 0;
+      background: url('./assets/misc/hall-bg.png') center / cover no-repeat;
+      filter: sepia(0.3) saturate(0.85) brightness(0.95);
+      pointer-events: none;
+    }
+
+    /* 两块信息面板共用；调大字号只改 --panel-font-size，其他层级按比例跟随。 */
+    .catalog, .culture {
+      --panel-font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      --panel-font-size: 16px;
+      --panel-title-size: calc(var(--panel-font-size) * 1.1875);
+      --panel-meta-size: calc(var(--panel-font-size) * 0.8125);
+      --panel-line-height: 1.8;
+      --panel-weight: 400;
+      --panel-emphasis-weight: 600;
+      --panel-radius: 4px;
+      --panel-border-width: 1px;
+      --panel-border-color: var(--glass-border);
+      --panel-background: transparent;
+      --panel-text: var(--ink);
+      --panel-muted: var(--bamboo);
+      --panel-accent: var(--cinnabar);
+      --panel-hover: rgba(255, 248, 228, 0.32);
+      --panel-selected: rgba(156, 64, 53, 0.16);
+      --panel-selected-hover: rgba(156, 64, 53, 0.24);
+      --panel-focus-width: 2px;
+      --panel-focus-offset: 3px;
+      --panel-space-compact: 8px;
+      --panel-space-relaxed: 16px;
+      --panel-space-small-screen: 6px;
+
+      padding: calc(var(--panel-space) * 2);
+      border: var(--panel-border-width) solid var(--panel-border-color);
+      border-radius: var(--panel-radius);
+      background: var(--panel-background);
+      color: var(--panel-text);
+      font-family: var(--panel-font-family);
+      font-size: var(--panel-font-size);
+      font-weight: var(--panel-weight);
+      line-height: var(--panel-line-height);
+    }
+
+    /* 目录的首屏配色单独管理，解说区继续使用原有配色。 */
+    .catalog {
+      --panel-space: var(--panel-space-compact);
+      --panel-background: transparent;
+      --panel-border-color: var(--glass-border);
+      --panel-text: var(--ink);
+      --panel-accent: var(--cinnabar);
+      --panel-hover: rgba(255, 248, 228, 0.32);
+      --panel-selected: rgba(156, 64, 53, 0.16);
+      --panel-selected-hover: rgba(156, 64, 53, 0.24);
+      --panel-selected-text: var(--cinnabar-deep);
+      --logo-font-family: "Kaiti SC", "STKaiti", "KaiTi", "Songti SC", serif;
+      --logo-font-size: calc(var(--panel-font-size) * 1.5);
+      --logo-letter-spacing: 0.06em;
+      grid-column: 1;
+      grid-row: 1;
+      position: relative;
+      z-index: 1;
+    }
+    .stage-controls {
+      -webkit-backdrop-filter: var(--glass-blur);
+      backdrop-filter: var(--glass-blur);
+    }
+    .catalog, .stage-controls, .culture {
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 4px 20px rgba(35, 59, 54, 0.08);
+    }
+    .culture {
+      --panel-space: var(--panel-space-relaxed);
+      --panel-background: transparent;
+      --panel-border-color: var(--glass-border);
+      --panel-hover: rgba(255, 255, 255, 0.4);
+      --panel-selected: rgba(255, 255, 255, 0.18);
+      --panel-selected-hover: rgba(255, 255, 255, 0.28);
+    }
+
+    .catalog ul {
+      display: flex;
+      flex-direction: column;
+      gap: var(--panel-space);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .catalog button, .culture-tabs button {
+      padding: calc(var(--panel-space) * 0.75) var(--panel-space);
+      border: var(--panel-border-width) solid transparent;
+      border-radius: var(--panel-radius);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .catalog button {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+
+    .catalog button:hover, .culture-tabs button:hover {
+      background: var(--panel-hover);
+      border-color: var(--panel-border-color);
+    }
+
+    .catalog button[aria-current="true"], .culture-tabs button[aria-selected="true"] {
+      border-color: var(--panel-accent);
+      background: var(--panel-selected);
+      font-weight: var(--panel-emphasis-weight);
+    }
+
+    .catalog button[aria-current="true"]:hover, .culture-tabs button[aria-selected="true"]:hover {
+      background: var(--panel-selected-hover);
+    }
+
+    .catalog button[aria-current="true"] { color: var(--panel-selected-text); }
+
+    #umbrella-list button {
+      background: transparent;
+      border-color: transparent;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      font-family: var(--logo-font-family);
+      font-size: var(--logo-font-size);
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: var(--logo-letter-spacing);
+      color: var(--ink);
+      text-shadow: 0 1px 0 rgba(255, 250, 235, 0.58);
+    }
+
+    .pattern-catalog { display: none; margin-top: calc(var(--panel-space) * 2); }
+    .pattern-catalog h3 { font-size: var(--panel-font-size); }
+    .pattern-catalog button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 68px;
+    }
+    .pattern-preview { width: 76px; height: 52px; object-fit: contain; flex: 0 0 auto; }
+    .pattern-catalog button[aria-pressed="false"] {
+      background: transparent;
+      border-color: transparent;
+      border-bottom-color: rgba(255, 255, 255, 0.5);
+      border-radius: 0;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    .pattern-catalog button[aria-pressed="false"] .pattern-preview {
+      filter: brightness(0.7) saturate(0.55);
+      opacity: 0.7;
+    }
+    .pattern-catalog button[aria-pressed="true"] {
+      background: var(--panel-selected);
+      border-color: var(--glass-border);
+      color: var(--panel-selected-text);
+      font-weight: var(--panel-emphasis-weight);
+      -webkit-backdrop-filter: var(--glass-blur);
+      backdrop-filter: var(--glass-blur);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 2px 8px rgba(35, 59, 54, 0.08);
+    }
+    .pattern-catalog button[aria-pressed="true"]:hover { background: var(--panel-selected-hover); }
+
+    .catalog :focus-visible, .culture :focus-visible {
+      outline: var(--panel-focus-width) solid var(--panel-accent);
+      outline-offset: var(--panel-focus-offset);
+    }
+
+    .catalog h3, .culture h3 {
+      margin: 0 0 var(--panel-space);
+      font-size: var(--panel-title-size);
+      font-weight: var(--panel-emphasis-weight);
+      line-height: var(--panel-line-height);
+    }
+
+    .stage {
+      position: relative;
+      min-width: 0;
+      height: 100vh;
+      height: 100svh;
+      isolation: isolate;
+      overflow: hidden;
+      background: #b8c2aa;
+    }
+
+    .stage::before {
+      content: "";
+      position: absolute;
+      inset: -24px;
+      z-index: -1;
+      background: url('./assets/misc/hall-bg.png') center / cover no-repeat;
+      filter: blur(2px) sepia(0.3) saturate(0.85) brightness(0.95);
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    #viewport { position: absolute; inset: 0; }
+    #viewport canvas { display: block; touch-action: none; }
+
+    .stage-controls {
+      position: absolute;
+      right: 28px;
+      bottom: 28px;
+      display: grid;
+      gap: 18px;
+      width: 210px;
+      margin: 0;
+      padding: 18px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-background);
+      color: var(--ink);
+    }
+
+    .settings-toggle { display: none; }
+
+    .parameter-open { display: none; }
+    .parameter-open:hover { background: rgba(255, 248, 228, .48); }
+    .parameter-open:focus-visible, .parameter-dialog :focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 3px; }
+    .parameter-overlay {
+      grid-column: 3; grid-row: 1; position: relative; z-index: 1; min-width: 0;
+      max-height: 85vh; max-height: 85svh; overflow-y: auto; padding: 12px;
+      border-left: 1px solid var(--glass-border); background: rgba(241,233,214,.16);
+      -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+    }
+    .parameter-dialog {
+      width: 100%; max-width: none; padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px;
+      background: rgba(239,233,217,.32); color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6); font: inherit;
+    }
+    .parameter-dialog header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+    .parameter-dialog h2 { margin:0; font-size:17px; }
+    .parameter-dialog p { margin:4px 0 0; color:var(--bamboo); font-size:12px; }
+    .parameter-close { width:36px; height:36px; flex:0 0 auto; border:1px solid var(--glass-border); border-radius:50%; background:rgba(255,255,255,.38); color:inherit; font:inherit; font-size:21px; cursor:pointer; }
+    .parameter-close { display:none; }
+    .parameter-group + .parameter-group { margin-top:12px; padding-top:10px; border-top:1px solid rgba(82,104,90,.24); }
+    .parameter-group h3 { margin:0 0 7px; font-size:13px; }
+    .parameter-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+    .parameter-field { min-width:0; padding:7px; border:1px solid rgba(255,250,235,.76); border-radius:6px; background:rgba(255,255,255,.25); }
+    .parameter-field label { display:flex; justify-content:space-between; gap:5px; margin-bottom:5px; font-size:11px; }
+    .parameter-field output { color:var(--bamboo); font-variant-numeric:tabular-nums; }
+    .parameter-field input[type="range"] { width:100%; accent-color:var(--cinnabar); }
+    .parameter-field input[type="color"] { width:100%; height:28px; padding:2px; border:1px solid rgba(82,104,90,.3); border-radius:5px; background:transparent; cursor:pointer; }
+    .parameter-hint { margin:9px 0 0 !important; font-size:11px !important; }
+    .parameter-reset {
+      width:100%; margin-top:10px; padding:8px 10px; border:1px solid rgba(156,64,53,.48); border-radius:7px;
+      background:rgba(255,255,255,.35); color:var(--cinnabar-deep); font:inherit; cursor:pointer;
+    }
+    .parameter-reset:hover { background:rgba(156,64,53,.12); }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .stage-controls input[type="range"] {
+      width: 100%; height: 24px; margin: 0;
+      appearance: none; -webkit-appearance: none;
+      background: transparent; cursor: pointer;
+    }
+    .stage-controls input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px; border-radius: 8px;
+      border: 1px solid rgba(183, 151, 91, 0.72);
+      background: rgba(255, 248, 228, 0.28);
+      box-shadow: inset 0 1px 3px rgba(35, 59, 54, 0.18);
+    }
+    .stage-controls input[type="range"]::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none;
+      width: 24px; height: 24px; margin-top: -9px; border-radius: 50%;
+      border: 1px solid rgba(255, 250, 235, 0.92);
+      background: rgba(246, 235, 211, 0.72);
+      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+      box-shadow: inset 0 1px 3px #ffffff, 0 2px 6px rgba(35, 59, 54, 0.25);
+    }
+    .stage-controls input[type="range"]::-moz-range-track {
+      height: 8px; border-radius: 8px;
+      border: 1px solid rgba(183, 151, 91, 0.72);
+      background: rgba(255, 248, 228, 0.28);
+      box-shadow: inset 0 1px 3px rgba(35, 59, 54, 0.18);
+    }
+    .stage-controls input[type="range"]::-moz-range-thumb {
+      width: 24px; height: 24px; border-radius: 50%;
+      border: 1px solid rgba(255, 250, 235, 0.92);
+      background: rgba(246, 235, 211, 0.72);
+      backdrop-filter: blur(8px);
+      box-shadow: inset 0 1px 3px #ffffff, 0 2px 6px rgba(35, 59, 54, 0.25);
+    }
+    .plain-canopy-option { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; cursor: pointer; }
+    .stage-controls .plain-canopy-option input { width: 18px; height: 18px; margin: 0; flex: 0 0 auto; accent-color: var(--cinnabar); }
+    .stage-controls select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 248, 228, 0.3);
+      color: inherit;
+      font: inherit;
+    }
+
+    .stage-controls :focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 3px; }
+    #stage-status { position: absolute; top: 24px; left: 28px; right: 28px; margin: 0; color: var(--ink); }
+    #stage-status:empty { display: none; }
+
+    .culture {
+      grid-column: 2;
+      grid-row: 2;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .culture-tabs button[aria-selected="true"] {
+      border-color: var(--glass-border);
+      -webkit-backdrop-filter: var(--glass-blur);
+      backdrop-filter: var(--glass-blur);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 2px 8px rgba(35, 59, 54, 0.08);
+    }
+
+    .culture-tabs {
+      display: flex;
+      gap: var(--panel-space);
+      padding-bottom: var(--panel-space);
+      border-bottom: var(--panel-border-width) solid var(--panel-border-color);
+    }
+    .culture-panel { padding-top: calc(var(--panel-space) * 2); }
+    .culture-entry + .culture-entry { margin-top: calc(var(--panel-space) * 2); }
+    .culture p { margin: 0 0 var(--panel-space); overflow-wrap: anywhere; }
+    .culture-level, .culture-source {
+      font-size: var(--panel-meta-size);
+      line-height: var(--panel-line-height);
+      color: var(--panel-muted);
+    }
+    .culture-source summary {
+      padding: calc(var(--panel-space) * 0.75) var(--panel-space);
+      border: var(--panel-border-width) solid transparent;
+      border-radius: var(--panel-radius);
+      cursor: pointer;
+      overflow-wrap: anywhere;
+    }
+    .culture-source summary:hover { background: var(--panel-hover); border-color: var(--panel-border-color); }
+    .culture-source p { margin-top: var(--panel-space); }
+    .culture-source a { color: inherit; text-underline-offset: var(--panel-focus-offset); }
+    .culture-source a:hover { color: var(--panel-accent); background: var(--panel-hover); }
+    .craft-steps { margin: 0; padding: 0; list-style: none; }
+    .craft-step {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: calc(var(--panel-space) * 2);
+      align-items: start;
+      padding: calc(var(--panel-space) * 2) 0;
+    }
+    .craft-step:first-child { padding-top: 0; }
+    .craft-step + .craft-step { border-top: var(--panel-border-width) solid var(--panel-border-color); }
+    .craft-step img { display: block; width: 100%; height: auto; }
+
+    /* 桌面展台下沿对齐约 85% 屏高；移动端沿用下方原有高度。 */
+    @media (min-width: 768px) {
+      .museum { grid-template-columns: 240px minmax(0, 1fr) 155px; }
+      .stage {
+        height: 85vh;
+        height: 85svh;
+      }
+      .catalog { max-height: 85vh; max-height: 85svh; overflow-y: auto; }
+      .culture { grid-column: 1 / -1; }
+      #umbrella-list { display: none; }
+      .pattern-catalog { display: block; margin-top: 0; }
+      .pattern-dropdown { display: none; }
+      .parameter-overlay {
+        isolation: isolate;
+        border: 1px solid var(--glass-border);
+        border-radius: 4px;
+        background: transparent;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 4px 20px rgba(35, 59, 54, 0.08);
+      }
+      .parameter-overlay::before {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        z-index: 0;
+        background: url('./assets/misc/hall-bg.png') center / cover no-repeat;
+        filter: blur(8px) sepia(0.3) saturate(0.85) brightness(0.95);
+        opacity: 0.72;
+        pointer-events: none;
+      }
+      .parameter-dialog {
+        position: relative;
+        z-index: 1;
+        padding: 8px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+      .parameter-dialog header { margin-bottom: 8px; }
+      .parameter-dialog h2 { font-size: 15px; }
+      .parameter-dialog p { font-size: 11px; }
+      .parameter-group + .parameter-group { margin-top: 10px; padding-top: 9px; }
+      .parameter-group h3 { margin-bottom: 6px; font-size: 12px; }
+      .parameter-fields { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+      .parameter-field {
+        padding: 6px 7px;
+        border-color: rgba(255, 250, 235, 0.54);
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .parameter-field label { margin-bottom: 4px; font-size: 10px; }
+      .parameter-field input[type="color"] { height: 24px; }
+      .parameter-hint { margin-top: 7px !important; font-size: 10px !important; }
+      .parameter-reset { margin-top: 8px; padding: 6px; font-size: 11px; }
+    }
+
+    @media (max-width: 767px), (max-width: 1024px) and (max-height: 600px) and (pointer: coarse) {
+      .museum { grid-template-columns: minmax(0, 1fr); }
+      .museum::before { display: none; }
+      .museum::after { grid-row: 2; }
+
+      .stage {
+        --mobile-controls-height: 112px;
+        grid-column: 1;
+        grid-row: 1;
+        height: calc(50vh + var(--mobile-controls-height));
+        height: calc(50dvh + var(--mobile-controls-height));
+        min-height: 0;
+      }
+
+      #viewport { bottom: var(--mobile-controls-height); }
+      .stage.settings-collapsed { --mobile-controls-height: 0px; }
+      .stage.settings-collapsed .stage-controls { display: none; }
+      .settings-toggle {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        right: 16px;
+        bottom: calc(var(--mobile-controls-height) + 12px);
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border: 1px solid var(--glass-border);
+        border-radius: 50%;
+        background: var(--glass-background);
+        -webkit-backdrop-filter: var(--glass-blur);
+        backdrop-filter: var(--glass-blur);
+        color: var(--ink);
+        font-size: 24px;
+        cursor: pointer;
+      }
+      .settings-toggle:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 3px; }
+      .parameter-open {
+        display: block; position: absolute; top: 16px; right: 16px; z-index: 10; pointer-events: auto;
+        padding: 8px 12px; border: 1px solid var(--glass-border); border-radius: 999px;
+        background: var(--glass-background); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+        color: var(--ink); font: inherit; cursor: pointer;
+      }
+      .parameter-overlay { display: none; }
+      .parameter-overlay[data-open="true"] {
+        position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 14px;
+        max-height: none; overflow: auto; border: 0; background: rgba(20,28,25,.42);
+        -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+      }
+      .parameter-dialog {
+        width: min(560px, calc(100vw - 28px)); max-height: min(84dvh, 760px); overflow-y: auto;
+        padding: 18px; border-radius: 12px; background: rgba(239,233,217,.92);
+        box-shadow: 0 18px 60px rgba(28,39,34,.3), inset 0 1px 0 rgba(255,255,255,.7);
+        -webkit-backdrop-filter: blur(22px) saturate(1.1); backdrop-filter: blur(22px) saturate(1.1);
+      }
+      .parameter-dialog h2 { font-size:20px; }
+      .parameter-dialog p { font-size:13px; }
+      .parameter-close { display: block; }
+      .parameter-group + .parameter-group { margin-top:18px; padding-top:15px; }
+      .parameter-group h3 { margin-bottom:10px; font-size:15px; }
+      .parameter-fields { grid-template-columns: minmax(0, 1fr); gap:12px; }
+      .parameter-field { padding:10px 11px; border-radius:8px; }
+      .parameter-field label { gap:8px; margin-bottom:7px; font-size:13px; }
+      .parameter-hint { margin-top:12px !important; font-size:12px !important; }
+      .parameter-reset { width:auto; margin-top:16px; padding:9px 14px; }
+
+      .stage-controls {
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: auto;
+        min-width: 0;
+        height: var(--mobile-controls-height);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: center;
+        gap: 16px;
+        padding: 10px 16px;
+        border-color: transparent;
+        background: transparent;
+        box-shadow: none;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+      .stage-controls > div { min-width: 0; }
+      .stage-controls .control-label { margin-bottom: 4px; }
+      .stage-controls input, .stage-controls select { height: 44px; }
+      .stage-controls select { font-size: 16px; }
+
+      .catalog {
+        --panel-space: var(--panel-space-small-screen);
+        --logo-font-size: 20px;
+        max-height: none;
+        overflow-y: visible;
+        grid-column: 1;
+        grid-row: 1;
+        align-self: start;
+        min-width: 0;
+        padding: 12px 16px;
+        border: 0;
+        box-shadow: none;
+        pointer-events: none;
+      }
+      .catalog ul { flex-direction: row; overflow-x: auto; }
+      #umbrella-list { display: flex; }
+      #umbrella-list button { padding: 0; pointer-events: auto; }
+      .catalog li { flex: 0 0 auto; }
+      .catalog button { min-height: 44px; white-space: nowrap; }
+      .pattern-catalog { display: none; }
+      .pattern-dropdown { display: block; }
+
+      .culture {
+        grid-column: 1;
+        grid-row: 2;
+        padding: var(--panel-space);
+      }
+      .culture-tabs { gap: calc(var(--panel-space) / 2); }
+      .culture-tabs button { flex: 1; padding-inline: 0; text-align: center; }
+      .craft-step { grid-template-columns: minmax(0, 1fr); gap: var(--panel-space); }
+      .craft-step img { max-width: 320px; margin-inline: auto; }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="museum">
+    <nav class="catalog">
+      <ul id="umbrella-list"></ul>
+      <section class="pattern-catalog" aria-labelledby="pattern-heading">
+        <h3 id="pattern-heading">纹样切换</h3>
+        <ul id="pattern-list"></ul>
+      </section>
+    </nav>
+    <main id="stage" class="stage">
+      <div id="viewport" data-presentation="hall"></div>
+      <p id="stage-status" role="status"></p>
+      <button id="parameter-open" class="parameter-open" type="button" aria-expanded="false" aria-controls="parameter-overlay">伞参数</button>
+      <button id="settings-toggle" class="settings-toggle" type="button" aria-expanded="true" aria-controls="stage-controls" aria-label="收起设置" title="收起设置">⌄</button>
+      <fieldset id="stage-controls" class="stage-controls" disabled>
+        <div>
+          <div class="control-label">
+            <label for="open-amount">开合</label>
+            <output id="open-value" for="open-amount"></output>
+          </div>
+          <input id="open-amount" type="range" min="0" max="1" step="0.01" value="1">
+          <label class="plain-canopy-option"><input id="plain-canopy" type="checkbox">查看无纹理样式</label>
+        </div>
+        <div class="pattern-dropdown">
+          <label class="control-label" for="pattern">纹样切换</label>
+          <select id="pattern"></select>
+        </div>
+      </fieldset>
+    </main>
+    <aside id="parameter-overlay" class="parameter-overlay" data-open="false" aria-label="古伞实时调参">
+      <section id="parameter-dialog" class="parameter-dialog" aria-labelledby="parameter-title">
+        <header>
+          <div><h2 id="parameter-title">古伞实时调参</h2><p>拖动或选择数值，展台会立即更新。</p></div>
+          <button id="parameter-close" class="parameter-close" type="button" aria-label="关闭调参面板">×</button>
+        </header>
+        <div id="parameter-content"></div>
+        <p class="parameter-hint">纹样与无纹理显示继续使用展台上的现有切换控件。</p>
+        <button id="parameter-reset" class="parameter-reset" type="button">恢复默认参数</button>
+      </section>
+    </aside>
+    <section class="culture">
+      <div class="culture-tabs" role="tablist" aria-label="文化解说">
+        <button id="tab-shape" type="button" role="tab" aria-selected="true" aria-controls="panel-shape">形制</button>
+        <button id="tab-craft" type="button" role="tab" aria-selected="false" aria-controls="panel-craft" tabindex="-1">工艺</button>
+        <button id="tab-pattern" type="button" role="tab" aria-selected="false" aria-controls="panel-pattern" tabindex="-1">纹样</button>
+      </div>
+      <div id="panel-shape" class="culture-panel" role="tabpanel" aria-labelledby="tab-shape" tabindex="0"></div>
+      <div id="panel-craft" class="culture-panel" role="tabpanel" aria-labelledby="tab-craft" tabindex="0" hidden></div>
+      <div id="panel-pattern" class="culture-panel" role="tabpanel" aria-labelledby="tab-pattern" tabindex="0" hidden></div>
+    </section>
+  </div>
+  <script type="module" src="./src/app.js?v=20261020-3"></script>
+</body>
+</html>
